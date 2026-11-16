@@ -1,0 +1,19 @@
+# generated data and logs
+data/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# Spark / Prefect / IDE
+spark-warehouse/
+metastore_db/
+.prefect/
+.idea/
+.vscode/
+hs_err_pid*.log
+replay_pid*.log

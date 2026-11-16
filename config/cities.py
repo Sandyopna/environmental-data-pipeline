@@ -1,0 +1,42 @@
+
+CITIES = [
+    {"state": "Andhra Pradesh", "city": "Visakhapatnam", "latitude": 17.6868, "longitude": 83.2185},
+    {"state": "Arunachal Pradesh", "city": "Itanagar", "latitude": 27.0844, "longitude": 93.6053},
+    {"state": "Assam", "city": "Guwahati", "latitude": 26.1445, "longitude": 91.7362},
+    {"state": "Bihar", "city": "Patna", "latitude": 25.5941, "longitude": 85.1376},
+    {"state": "Chhattisgarh", "city": "Raipur", "latitude": 21.2514, "longitude": 81.6296},
+    {"state": "Goa", "city": "Panaji", "latitude": 15.4909, "longitude": 73.8278},
+    {"state": "Gujarat", "city": "Ahmedabad", "latitude": 23.0225, "longitude": 72.5714},
+    {"state": "Haryana", "city": "Gurugram", "latitude": 28.4595, "longitude": 77.0266},
+    {"state": "Himachal Pradesh", "city": "Shimla", "latitude": 31.1048, "longitude": 77.1734},
+    {"state": "Jharkhand", "city": "Ranchi", "latitude": 23.3441, "longitude": 85.3096},
+    {"state": "Karnataka", "city": "Bengaluru", "latitude": 12.9716, "longitude": 77.5946},
+    {"state": "Kerala", "city": "Kochi", "latitude": 9.9312, "longitude": 76.2673},
+    {"state": "Madhya Pradesh", "city": "Bhopal", "latitude": 23.2599, "longitude": 77.4126},
+    {"state": "Maharashtra", "city": "Mumbai", "latitude": 19.0760, "longitude": 72.8777},
+    {"state": "Manipur", "city": "Imphal", "latitude": 24.8170, "longitude": 93.9368},
+    {"state": "Meghalaya", "city": "Shillong", "latitude": 25.5788, "longitude": 91.8933},
+    {"state": "Mizoram", "city": "Aizawl", "latitude": 23.7271, "longitude": 92.7176},
+    {"state": "Nagaland", "city": "Kohima", "latitude": 25.6751, "longitude": 94.1086},
+    {"state": "Odisha", "city": "Bhubaneswar", "latitude": 20.2961, "longitude": 85.8245},
+    {"state": "Punjab", "city": "Ludhiana", "latitude": 30.9010, "longitude": 75.8573},
+    {"state": "Rajasthan", "city": "Jaipur", "latitude": 26.9124, "longitude": 75.7873},
+    {"state": "Sikkim", "city": "Gangtok", "latitude": 27.3389, "longitude": 88.6065},
+    {"state": "Tamil Nadu", "city": "Chennai", "latitude": 13.0827, "longitude": 80.2707},
+    {"state": "Telangana", "city": "Hyderabad", "latitude": 17.3850, "longitude": 78.4867},
+    {"state": "Tripura", "city": "Agartala", "latitude": 23.8315, "longitude": 91.2868},
+    {"state": "Uttar Pradesh", "city": "Lucknow", "latitude": 26.8467, "longitude": 80.9462},
+    {"state": "Uttarakhand", "city": "Dehradun", "latitude": 30.3165, "longitude": 78.0322},
+    {"state": "West Bengal", "city": "Kolkata", "latitude": 22.5726, "longitude": 88.3639},
+
+    # Union Territories
+
+    {"state": "Andaman and Nicobar Islands", "city": "Port Blair", "latitude": 11.6234, "longitude": 92.7265},
+    {"state": "Chandigarh", "city": "Chandigarh", "latitude": 30.7333, "longitude": 76.7794},
+    {"state": "Dadra and Nagar Haveli and Daman and Diu", "city": "Daman", "latitude": 20.3974, "longitude": 72.8328},
+    {"state": "Delhi", "city": "New Delhi", "latitude": 28.6139, "longitude": 77.2090},
+    {"state": "Jammu and Kashmir", "city": "Srinagar", "latitude": 34.0837, "longitude": 74.7973},
+    {"state": "Ladakh", "city": "Leh", "latitude": 34.1526, "longitude": 77.5771},
+    {"state": "Lakshadweep", "city": "Kavaratti", "latitude": 10.5667, "longitude": 72.6417},
+    {"state": "Puducherry", "city": "Puducherry", "latitude": 11.9416, "longitude": 79.8083}
+]
