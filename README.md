@@ -2,8 +2,13 @@
 
 A batch data pipeline that ingests hourly weather data from the Open-Meteo API for 36 Indian cities, processes it through Bronze, Silver and Gold layers with PySpark, and produces analytics-ready tables for dashboards. The stages are orchestrated with Prefect.
 
-![Dashboard screenshot](docs/dashboard.png)
-<!-- Add a screenshot of your dashboard at docs/dashboard.png -->
+
+## Dashboard Demo
+
+Watch the dashboard demonstration:
+
+[▶ View Environmental Data Intelligence Dashboard Demo](docs/dashboard-demo.mp4)
+
 
 ## Architecture
 
