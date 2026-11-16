@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>India Weather Snapshot, 12–14 Nov 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef2f5;--card:#fff;--ink:#14232e;--mute:#5d6e7a;--line:#d8e0e6;--hot:#d9731f;--cool:#2f6fd0;--teal:#0f7b8a;--rain:#5b5fc7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#101a21;--card:#17252e;--ink:#e6eef3;--mute:#8fa3b0;--line:#2a3b46;--hot:#f0903f;--cool:#6b9cf0;--teal:#3fb7c7;--rain:#8f93f0}}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Figtree,system-ui,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:26px;margin:0 0 2px}p.sub{margin:0 0 16px;color:var(--mute)}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:16px}
+.tabs,.seg{display:flex;gap:4px;flex-wrap:wrap}
+button,select{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+button:focus-visible,select:focus-visible{outline:2px solid var(--teal);outline-offset:2px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.k{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.k b{display:block;font-size:26px;line-height:1.2}.k span{color:var(--mute);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.card h2{font-size:16px;margin:0 0 2px}.card p{margin:0 0 10px;color:var(--mute);font-size:13px}
+.wide{grid-column:1/-1}.sc{overflow-y:auto;max-height:520px}.cv{position:relative;height:300px}
+.ins{margin:10px 0 0;padding-left:18px;color:var(--ink)}.ins li{margin:3px 0}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{text-align:right;padding:6px 8px;border-bottom:1px solid var(--line)}th:first-child,td:first-child{text-align:left}
+[hidden]{display:none!important}
+</style></head><body><main>
+<h1>India weather snapshot</h1>
+<p class="sub" id="sub">36 cities, 12–14 Nov 2026. Pick a day to filter every chart.</p><div class="bar" style="justify-content:flex-start"><button id="lb">Load your own CSV</button><input type="file" id="lf" accept=".csv,text/csv" hidden><span id="msg" role="status" style="color:var(--mute);font-size:13px">Needs columns: city, date, avg_temperature, min_temperature, max_temperature, avg_humidity, avg_wind_speed, total_precipitation. Optional: state, weather_category.</span></div>
+<div class="bar"><div class="tabs" id="tabs"></div><div class="seg" id="days"></div></div>
+<section id="v0"><div class="kpis" id="kpis"></div><div class="grid">
+<div class="card wide"><h2>Average temperature by city</h2><p>Sorted hottest to coldest.</p><div class="sc"><div id="w1" style="position:relative"><canvas id="c1"></canvas></div></div></div>
+<div class="card"><h2>Weather mix</h2><p>Share of city-days by category.</p><div class="cv"><canvas id="c2"></canvas></div></div>
+<div class="card"><h2>Rainfall leaders</h2><p>Total precipitation (mm), top 10 cities.</p><div class="cv"><canvas id="c3"></canvas></div></div></div></section>
+<section id="v1" hidden><div class="grid">
+<div class="card wide"><h2>What goes with temperature?</h2><p>Each dot is one city-day. <select id="xs" aria-label="X axis"><option value="h">Humidity (%)</option><option value="w">Wind (km/h)</option><option value="p">Rain (mm)</option></select></p><div class="cv" style="height:340px"><canvas id="c4"></canvas></div></div>
+<div class="card"><h2>Biggest daily temperature swings</h2><p>Max minus min over the selected days (°C).</p><div class="cv"><canvas id="c5"></canvas></div></div>
+<div class="card"><h2>Windiest cities</h2><p>Average wind speed (km/h).</p><div class="cv"><canvas id="c6"></canvas></div></div></div></section>
+<section id="v2" hidden><div class="bar"><select id="cs" aria-label="City"></select></div><div class="grid">
+<div class="card"><h2 id="ct">City</h2><p>Min, average and max temperature (°C) per day.</p><div class="cv"><canvas id="c7"></canvas></div></div>
+<div class="card"><h2>Daily readings</h2><p id="cn"></p><table id="tb"></table></div></div></section>
+<section id="v3" hidden><div class="bar"><div class="seg" id="ms"></div><div class="seg" id="ps"></div></div><div class="grid">
+<div class="card wide"><h2 id="mt">Biggest movers</h2><p>Five largest rises and falls between the two days.</p><div class="cv" style="height:360px"><canvas id="c8"></canvas></div></div></div></section>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+let D=[{"c":"Visakhapatnam","s":"Andhra Pradesh","d":0,"t":26.5,"mn":22.9,"mx":30.5,"h":75.1,"w":8.8,"p":0.0,"k":0},{"c":"Visakhapatnam","s":"Andhra Pradesh","d":1,"t":26.38,"mn":22.9,"mx":30.8,"h":74.6,"w":9.5,"p":0.6,"k":1},{"c":"Visakhapatnam","s":"Andhra Pradesh","d":2,"t":25.99,"mn":23.0,"mx":30.4,"h":72.4,"w":9.2,"p":0.0,"k":0},{"c":"Guwahati","s":"Assam","d":0,"t":22.34,"mn":17.8,"mx":27.4,"h":76.0,"w":5.4,"p":1.3,"k":1},{"c":"Guwahati","s":"Assam","d":1,"t":23.04,"mn":18.7,"mx":28.2,"h":71.7,"w":5.5,"p":0.0,"k":0},{"c":"Guwahati","s":"Assam","d":2,"t":22.92,"mn":19.1,"mx":28.2,"h":72.9,"w":4.2,"p":0.1,"k":1},{"c":"Agartala","s":"Tripura","d":0,"t":23.94,"mn":19.7,"mx":29.6,"h":77.9,"w":5.3,"p":1.0,"k":1},{"c":"Agartala","s":"Tripura","d":1,"t":24.18,"mn":19.1,"mx":29.6,"h":72.3,"w":5.2,"p":0.0,"k":0},{"c":"Agartala","s":"Tripura","d":2,"t":23.87,"mn":19.7,"mx":29.0,"h":72.4,"w":3.3,"p":0.0,"k":0},{"c":"Kavaratti","s":"Lakshadweep","d":0,"t":29.91,"mn":29.0,"mx":30.6,"h":64.2,"w":6.4,"p":0.0,"k":0},{"c":"Kavaratti","s":"Lakshadweep","d":1,"t":30.04,"mn":29.6,"mx":30.6,"h":62.0,"w":13.1,"p":0.0,"k":2},{"c":"Kavaratti","s":"Lakshadweep","d":2,"t":29.15,"mn":28.7,"mx":30.3,"h":59.1,"w":4.3,"p":0.0,"k":0},{"c":"Mumbai","s":"Maharashtra","d":0,"t":29.38,"mn":23.7,"mx":35.2,"h":40.5,"w":7.1,"p":0.0,"k":0},{"c":"Mumbai","s":"Maharashtra","d":1,"t":29.08,"mn":23.4,"mx":34.8,"h":42.5,"w":7.3,"p":0.0,"k":0},{"c":"Mumbai","s":"Maharashtra","d":2,"t":28.54,"mn":23.7,"mx":34.5,"h":47.8,"w":6.5,"p":0.0,"k":0},{"c":"Itanagar","s":"Arunachal Pradesh","d":0,"t":19.37,"mn":15.9,"mx":26.4,"h":79.0,"w":5.6,"p":1.3,"k":1},{"c":"Itanagar","s":"Arunachal Pradesh","d":1,"t":20.18,"mn":15.9,"mx":26.1,"h":72.5,"w":4.0,"p":0.0,"k":0},{"c":"Itanagar","s":"Arunachal Pradesh","d":2,"t":19.82,"mn":15.4,"mx":25.8,"h":70.6,"w":3.9,"p":0.0,"k":0},{"c":"Gurugram","s":"Haryana","d":0,"t":23.35,"mn":17.3,"mx":29.5,"h":64.2,"w":3.8,"p":0.0,"k":0},{"c":"Gurugram","s":"Haryana","d":1,"t":23.63,"mn":17.7,"mx":30.6,"h":61.5,"w":4.8,"p":0.0,"k":0},{"c":"Gurugram","s":"Haryana","d":2,"t":23.34,"mn":17.9,"mx":30.1,"h":63.6,"w":4.2,"p":0.0,"k":0},{"c":"Bhubaneswar","s":"Odisha","d":0,"t":25.91,"mn":22.7,"mx":30.2,"h":76.5,"w":7.6,"p":0.2,"k":1},{"c":"Bhubaneswar","s":"Odisha","d":1,"t":25.5,"mn":22.3,"mx":30.0,"h":73.0,"w":8.7,"p":0.0,"k":0},{"c":"Bhubaneswar","s":"Odisha","d":2,"t":25.51,"mn":22.1,"mx":30.3,"h":72.7,"w":5.5,"p":0.0,"k":0},{"c":"Dehradun","s":"Uttarakhand","d":0,"t":18.33,"mn":14.6,"mx":22.8,"h":66.8,"w":2.1,"p":0.0,"k":0},{"c":"Dehradun","s":"Uttarakhand","d":1,"t":18.38,"mn":15.8,"mx":22.6,"h":76.4,"w":2.0,"p":0.0,"k":0},{"c":"Dehradun","s":"Uttarakhand","d":2,"t":17.92,"mn":12.0,"mx":23.9,"h":80.6,"w":2.9,"p":0.2,"k":1},{"c":"Shimla","s":"Himachal Pradesh","d":0,"t":9.96,"mn":5.0,"mx":15.6,"h":60.8,"w":5.5,"p":0.0,"k":0},{"c":"Shimla","s":"Himachal Pradesh","d":1,"t":9.92,"mn":6.1,"mx":14.9,"h":57.8,"w":5.9,"p":0.2,"k":1},{"c":"Shimla","s":"Himachal Pradesh","d":2,"t":9.28,"mn":4.1,"mx":15.6,"h":63.4,"w":5.3,"p":0.2,"k":1},{"c":"Bengaluru","s":"Karnataka","d":0,"t":22.82,"mn":18.2,"mx":28.2,"h":53.0,"w":9.1,"p":0.0,"k":0},{"c":"Bengaluru","s":"Karnataka","d":1,"t":22.78,"mn":17.3,"mx":28.7,"h":56.1,"w":10.0,"p":0.0,"k":0},{"c":"Bengaluru","s":"Karnataka","d":2,"t":23.6,"mn":17.9,"mx":28.6,"h":60.5,"w":7.1,"p":0.0,"k":0},{"c":"Panaji","s":"Goa","d":0,"t":27.99,"mn":21.9,"mx":35.2,"h":47.0,"w":10.0,"p":0.0,"k":0},{"c":"Panaji","s":"Goa","d":1,"t":27.78,"mn":21.8,"mx":34.5,"h":49.7,"w":9.8,"p":0.0,"k":0},{"c":"Panaji","s":"Goa","d":2,"t":27.23,"mn":21.8,"mx":33.6,"h":51.3,"w":10.1,"p":0.0,"k":0},{"c":"Chandigarh","s":"Chandigarh","d":0,"t":21.18,"mn":17.0,"mx":26.3,"h":62.8,"w":5.4,"p":0.0,"k":0},{"c":"Chandigarh","s":"Chandigarh","d":1,"t":21.75,"mn":18.2,"mx":28.2,"h":58.6,"w":7.2,"p":0.0,"k":0},{"c":"Chandigarh","s":"Chandigarh","d":2,"t":21.07,"mn":15.4,"mx":26.7,"h":62.2,"w":5.3,"p":0.0,"k":0},{"c":"Port Blair","s":"Andaman and Nicobar Islands","d":0,"t":26.11,"mn":24.5,"mx":27.3,"h":88.8,"w":13.9,"p":21.2,"k":1},{"c":"Port Blair","s":"Andaman and Nicobar Islands","d":1,"t":26.64,"mn":24.8,"mx":28.1,"h":86.6,"w":17.8,"p":15.5,"k":1},{"c":"Port Blair","s":"Andaman and Nicobar Islands","d":2,"t":27.6,"mn":25.0,"mx":30.6,"h":83.7,"w":15.4,"p":17.7,"k":1},{"c":"Lucknow","s":"Uttar Pradesh","d":0,"t":23.27,"mn":18.2,"mx":28.8,"h":65.8,"w":5.0,"p":0.0,"k":0},{"c":"Lucknow","s":"Uttar Pradesh","d":1,"t":23.57,"mn":18.6,"mx":28.8,"h":71.1,"w":4.0,"p":0.0,"k":0},{"c":"Lucknow","s":"Uttar Pradesh","d":2,"t":23.45,"mn":18.9,"mx":28.7,"h":75.4,"w":3.5,"p":0.0,"k":0},{"c":"Jaipur","s":"Rajasthan","d":0,"t":24.43,"mn":19.2,"mx":30.2,"h":42.8,"w":4.0,"p":0.0,"k":0},{"c":"Jaipur","s":"Rajasthan","d":1,"t":24.96,"mn":20.1,"mx":31.0,"h":43.3,"w":4.9,"p":0.0,"k":0},{"c":"Jaipur","s":"Rajasthan","d":2,"t":25.06,"mn":20.1,"mx":30.7,"h":38.3,"w":6.6,"p":0.0,"k":0},{"c":"Puducherry","s":"Puducherry","d":0,"t":27.35,"mn":24.6,"mx":30.5,"h":72.8,"w":15.9,"p":0.0,"k":0},{"c":"Puducherry","s":"Puducherry","d":1,"t":27.1,"mn":24.1,"mx":30.0,"h":73.7,"w":16.1,"p":0.3,"k":1},{"c":"Puducherry","s":"Puducherry","d":2,"t":27.16,"mn":24.5,"mx":30.2,"h":76.7,"w":16.2,"p":2.1,"k":1},{"c":"Ahmedabad","s":"Gujarat","d":0,"t":28.98,"mn":22.7,"mx":34.8,"h":30.4,"w":6.5,"p":0.0,"k":0},{"c":"Ahmedabad","s":"Gujarat","d":1,"t":28.04,"mn":21.4,"mx":34.0,"h":34.1,"w":6.2,"p":0.0,"k":0},{"c":"Ahmedabad","s":"Gujarat","d":2,"t":27.89,"mn":21.3,"mx":33.9,"h":36.3,"w":5.2,"p":0.0,"k":0},{"c":"Hyderabad","s":"Telangana","d":0,"t":25.15,"mn":20.2,"mx":29.9,"h":42.8,"w":7.5,"p":0.0,"k":0},{"c":"Hyderabad","s":"Telangana","d":1,"t":25.09,"mn":19.6,"mx":30.3,"h":43.2,"w":6.1,"p":0.0,"k":0},{"c":"Hyderabad","s":"Telangana","d":2,"t":25.47,"mn":20.5,"mx":30.5,"h":44.6,"w":4.6,"p":0.0,"k":0},{"c":"Chennai","s":"Tamil Nadu","d":0,"t":27.64,"mn":24.6,"mx":31.3,"h":68.1,"w":12.2,"p":0.1,"k":1},{"c":"Chennai","s":"Tamil Nadu","d":1,"t":27.26,"mn":24.3,"mx":30.2,"h":75.0,"w":13.0,"p":1.5,"k":1},{"c":"Chennai","s":"Tamil Nadu","d":2,"t":27.71,"mn":25.5,"mx":30.5,"h":72.9,"w":14.2,"p":1.9,"k":1},{"c":"Ludhiana","s":"Punjab","d":0,"t":23.36,"mn":18.0,"mx":29.0,"h":62.5,"w":3.8,"p":0.0,"k":0},{"c":"Ludhiana","s":"Punjab","d":1,"t":23.44,"mn":19.0,"mx":29.2,"h":61.2,"w":4.7,"p":0.0,"k":0},{"c":"Ludhiana","s":"Punjab","d":2,"t":22.81,"mn":18.9,"mx":28.7,"h":61.3,"w":4.1,"p":0.2,"k":1},{"c":"Kolkata","s":"West Bengal","d":0,"t":25.18,"mn":21.0,"mx":29.3,"h":75.9,"w":5.1,"p":0.9,"k":1},{"c":"Kolkata","s":"West Bengal","d":1,"t":25.55,"mn":22.4,"mx":29.2,"h":73.4,"w":5.2,"p":0.0,"k":0},{"c":"Kolkata","s":"West Bengal","d":2,"t":25.43,"mn":22.3,"mx":29.2,"h":71.2,"w":3.3,"p":0.0,"k":0},{"c":"Ranchi","s":"Jharkhand","d":0,"t":19.94,"mn":16.1,"mx":25.0,"h":73.6,"w":6.0,"p":0.0,"k":0},{"c":"Ranchi","s":"Jharkhand","d":1,"t":19.73,"mn":15.4,"mx":25.2,"h":68.8,"w":4.4,"p":0.0,"k":0},{"c":"Ranchi","s":"Jharkhand","d":2,"t":20.05,"mn":15.6,"mx":25.5,"h":66.6,"w":8.0,"p":0.0,"k":0},{"c":"Raipur","s":"Chhattisgarh","d":0,"t":21.69,"mn":16.3,"mx":27.4,"h":71.1,"w":4.6,"p":0.0,"k":0},{"c":"Raipur","s":"Chhattisgarh","d":1,"t":22.26,"mn":16.7,"mx":28.3,"h":70.9,"w":4.3,"p":0.0,"k":0},{"c":"Raipur","s":"Chhattisgarh","d":2,"t":22.87,"mn":17.3,"mx":29.0,"h":67.8,"w":3.3,"p":0.0,"k":0},{"c":"Aizawl","s":"Mizoram","d":0,"t":16.97,"mn":12.7,"mx":22.8,"h":80.7,"w":3.4,"p":6.6,"k":1},{"c":"Aizawl","s":"Mizoram","d":1,"t":17.27,"mn":11.0,"mx":24.1,"h":76.8,"w":2.6,"p":0.0,"k":0},{"c":"Aizawl","s":"Mizoram","d":2,"t":17.34,"mn":12.4,"mx":23.4,"h":76.1,"w":3.3,"p":0.0,"k":0},{"c":"Imphal","s":"Manipur","d":0,"t":18.71,"mn":15.4,"mx":23.7,"h":78.4,"w":4.3,"p":9.5,"k":1},{"c":"Imphal","s":"Manipur","d":1,"t":18.86,"mn":14.5,"mx":24.6,"h":74.8,"w":4.5,"p":0.0,"k":0},{"c":"Imphal","s":"Manipur","d":2,"t":18.42,"mn":14.1,"mx":24.2,"h":73.2,"w":4.8,"p":0.0,"k":0},{"c":"Bhopal","s":"Madhya Pradesh","d":0,"t":23.3,"mn":17.6,"mx":29.0,"h":49.0,"w":5.7,"p":0.0,"k":0},{"c":"Bhopal","s":"Madhya Pradesh","d":1,"t":23.97,"mn":17.9,"mx":30.1,"h":47.2,"w":3.8,"p":0.0,"k":0},{"c":"Bhopal","s":"Madhya Pradesh","d":2,"t":24.05,"mn":18.6,"mx":29.9,"h":46.8,"w":3.9,"p":0.0,"k":0},{"c":"Patna","s":"Bihar","d":0,"t":23.12,"mn":19.0,"mx":27.6,"h":73.4,"w":4.8,"p":0.0,"k":0},{"c":"Patna","s":"Bihar","d":1,"t":23.4,"mn":19.6,"mx":27.7,"h":74.8,"w":5.2,"p":0.1,"k":1},{"c":"Patna","s":"Bihar","d":2,"t":23.37,"mn":19.7,"mx":27.9,"h":75.3,"w":4.8,"p":0.0,"k":0},{"c":"New Delhi","s":"Delhi","d":0,"t":23.44,"mn":18.3,"mx":28.4,"h":67.1,"w":3.4,"p":0.0,"k":0},{"c":"New Delhi","s":"Delhi","d":1,"t":23.8,"mn":18.7,"mx":29.5,"h":67.0,"w":3.2,"p":0.0,"k":0},{"c":"New Delhi","s":"Delhi","d":2,"t":23.5,"mn":19.5,"mx":28.8,"h":65.3,"w":3.7,"p":0.0,"k":0},{"c":"Shillong","s":"Meghalaya","d":0,"t":14.88,"mn":11.3,"mx":19.5,"h":74.8,"w":3.9,"p":1.1,"k":1},{"c":"Shillong","s":"Meghalaya","d":1,"t":15.71,"mn":13.0,"mx":20.7,"h":75.9,"w":3.4,"p":0.2,"k":1},{"c":"Shillong","s":"Meghalaya","d":2,"t":14.78,"mn":9.7,"mx":21.1,"h":78.2,"w":3.1,"p":0.8,"k":1},{"c":"Srinagar","s":"Jammu and Kashmir","d":0,"t":7.63,"mn":5.1,"mx":10.1,"h":90.5,"w":5.0,"p":13.8,"k":1},{"c":"Srinagar","s":"Jammu and Kashmir","d":1,"t":7.92,"mn":4.9,"mx":12.1,"h":90.6,"w":7.7,"p":26.2,"k":1},{"c":"Srinagar","s":"Jammu and Kashmir","d":2,"t":8.98,"mn":5.2,"mx":14.7,"h":73.5,"w":3.3,"p":5.0,"k":1},{"c":"Leh","s":"Ladakh","d":0,"t":2.32,"mn":-1.2,"mx":6.7,"h":43.8,"w":4.2,"p":0.0,"k":0},{"c":"Leh","s":"Ladakh","d":1,"t":2.17,"mn":-2.0,"mx":7.4,"h":49.1,"w":5.3,"p":0.4,"k":1},{"c":"Leh","s":"Ladakh","d":2,"t":0.06,"mn":-2.8,"mx":5.0,"h":39.2,"w":7.3,"p":0.0,"k":0},{"c":"Gangtok","s":"Sikkim","d":0,"t":13.05,"mn":7.4,"mx":18.4,"h":63.0,"w":2.6,"p":0.0,"k":0},{"c":"Gangtok","s":"Sikkim","d":1,"t":13.28,"mn":8.7,"mx":18.3,"h":65.0,"w":2.8,"p":0.2,"k":1},{"c":"Gangtok","s":"Sikkim","d":2,"t":13.22,"mn":9.7,"mx":18.4,"h":78.9,"w":3.4,"p":0.9,"k":1},{"c":"Daman","s":"Dadra and Nagar Haveli and Daman and Diu","d":0,"t":26.26,"mn":20.0,"mx":32.0,"h":59.5,"w":9.0,"p":0.0,"k":0},{"c":"Daman","s":"Dadra and Nagar Haveli and Daman and Diu","d":1,"t":26.16,"mn":20.3,"mx":30.8,"h":58.2,"w":9.5,"p":0.0,"k":0},{"c":"Daman","s":"Dadra and Nagar Haveli and Daman and Diu","d":2,"t":25.88,"mn":21.5,"mx":30.9,"h":61.7,"w":6.7,"p":0.0,"k":0},{"c":"Kohima","s":"Nagaland","d":0,"t":13.72,"mn":10.5,"mx":19.2,"h":83.4,"w":4.6,"p":10.5,"k":1},{"c":"Kohima","s":"Nagaland","d":1,"t":14.61,"mn":10.0,"mx":20.6,"h":79.3,"w":4.0,"p":0.6,"k":1},{"c":"Kohima","s":"Nagaland","d":2,"t":13.57,"mn":9.0,"mx":19.0,"h":86.8,"w":5.0,"p":3.8,"k":1},{"c":"Kochi","s":"Kerala","d":0,"t":27.9,"mn":25.7,"mx":30.0,"h":81.6,"w":4.1,"p":0.0,"k":0},{"c":"Kochi","s":"Kerala","d":1,"t":28.33,"mn":25.3,"mx":31.6,"h":79.7,"w":6.6,"p":0.0,"k":0},{"c":"Kochi","s":"Kerala","d":2,"t":28.09,"mn":25.2,"mx":30.6,"h":77.6,"w":6.2,"p":0.9,"k":1}];let DATES=["12 Nov","13 Nov","14 Nov"],CATS=["Normal","Rainy","Hot and Dry"];const pal=i=>cv(["teal","cool","hot","rain","mute"][i%5]);
+let day=-1,tab=0,mk="t",pr=1,charts={};
+const $=id=>document.getElementById(id),sum=a=>a.reduce((x,y)=>x+y,0),avg=a=>a.length?sum(a)/a.length:0,f=(n,d=1)=>n.toFixed(d);
+const cv=n=>getComputedStyle(document.documentElement).getPropertyValue("--"+n).trim();
+const rows=()=>day<0?D:D.filter(r=>r.d==day);
+function byCity(rs,k,fn){const m={};rs.forEach(r=>(m[r.c]=m[r.c]||[]).push(r[k]));return Object.entries(m).map(([c,v])=>[c,fn(v)])}
+function mk_(id,cfg){charts[id]&&charts[id].destroy();Chart.defaults.color=cv("mute");Chart.defaults.borderColor=cv("line");Chart.defaults.font.family="Figtree,system-ui,sans-serif";cfg.options=Object.assign({responsive:true,maintainAspectRatio:false},cfg.options||{});charts[id]=new Chart($(id),cfg)}
+function mkBtns(el,items,get,set){$(el).innerHTML="";items.forEach(([k,l])=>{const b=document.createElement("button");b.textContent=l;b.setAttribute("aria-pressed",get()==k);b.onclick=()=>{set(k);render()};$(el).append(b)})}
+function ins(a){return a}
+function render(){
+mkBtns("tabs",[[0,"Overview"],[1,"Compare"],[2,"City explorer"],[3,"Daily change"]],()=>tab,k=>tab=k);
+mkBtns("days",[[-1,"All days"],...DATES.map((l,i)=>[i,l])],()=>day,k=>day=+k);
+[0,1,2,3].forEach(i=>$("v"+i).hidden=tab!=i);$("days").hidden=tab>=2;
+[v0,v1,v2,v3][tab]();}
+function v0(){const rs=rows(),t=byCity(rs,"t",avg).sort((a,b)=>b[1]-a[1]);
+const rain=sum(rs.map(r=>r.p)),rd=rs.filter(r=>r.p>0).length;
+$("kpis").innerHTML=[[f(avg(rs.map(r=>r.t)))+" °C","Average temperature"],[f(avg(rs.map(r=>r.h)))+"%","Average humidity"],[f(avg(rs.map(r=>r.w)))+" km/h","Average wind"],[f(rain)+" mm","Total rain"],[rd+" of "+rs.length,"City-days with rain"],[t[0][0],"Hottest ("+f(t[0][1])+" °C)"],[t.at(-1)[0],"Coldest ("+f(t.at(-1)[1])+" °C)"]].map(([a,b])=>`<div class="k"><b>${a}</b><span>${b}</span></div>`).join("");
+$("w1").style.height=t.length*20+40+"px";
+const col=v=>v>=27?cv("hot"):v>=15?cv("teal"):cv("cool");
+mk_("c1",{type:"bar",data:{labels:t.map(x=>x[0]),datasets:[{data:t.map(x=>+x[1].toFixed(1)),backgroundColor:t.map(x=>col(x[1])),borderRadius:3}]},options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:"°C"}},y:{ticks:{autoSkip:false}}}}});
+const cc=CATS.map(c=>rs.filter(r=>r.k==c).length);
+mk_("c2",{type:"doughnut",data:{labels:CATS.map((c,i)=>c+" ("+f(cc[i]/rs.length*100)+"%)"),datasets:[{data:cc,backgroundColor:CATS.map((c,i)=>pal(i)),borderColor:cv("card")}]},options:{plugins:{legend:{position:"bottom"}}}});
+const r=byCity(rs,"p",sum).sort((a,b)=>b[1]-a[1]).slice(0,10);
+mk_("c3",{type:"bar",data:{labels:r.map(x=>x[0]),datasets:[{data:r.map(x=>+x[1].toFixed(1)),backgroundColor:cv("cool"),borderRadius:3}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});}
+function v1(){const rs=rows(),k=$("xs").value,L={h:"Humidity (%)",w:"Wind (km/h)",p:"Rain (mm)"};
+$("xs").onchange=v1;
+mk_("c4",{type:"scatter",data:{datasets:CATS.map((c,i)=>({label:c,data:rs.filter(r=>r.k==c).map(r=>({x:r[k],y:r.t,n:r.c})),backgroundColor:pal(i),pointRadius:5}))},options:{plugins:{tooltip:{callbacks:{label:q=>`${q.raw.n}: ${q.raw.x}, ${q.raw.y} °C`}}},scales:{x:{title:{display:true,text:L[k]}},y:{title:{display:true,text:"Avg temperature (°C)"}}}}});
+const m={};rs.forEach(r=>{m[r.c]=m[r.c]||[-99,99];m[r.c][0]=Math.max(m[r.c][0],r.mx);m[r.c][1]=Math.min(m[r.c][1],r.mn)});
+const s=Object.entries(m).map(([c,v])=>[c,v[0]-v[1]]).sort((a,b)=>b[1]-a[1]).slice(0,10);
+mk_("c5",{type:"bar",data:{labels:s.map(x=>x[0]),datasets:[{data:s.map(x=>+x[1].toFixed(1)),backgroundColor:cv("hot"),borderRadius:3}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});
+const w=byCity(rs,"w",avg).sort((a,b)=>b[1]-a[1]).slice(0,10);
+mk_("c6",{type:"bar",data:{labels:w.map(x=>x[0]),datasets:[{data:w.map(x=>+x[1].toFixed(1)),backgroundColor:cv("rain"),borderRadius:3}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});}
+function v2(){const cs=$("cs");if(!cs.options.length||!D.some(r=>r.c==cs.value)){cs.innerHTML="";[...new Set(D.map(r=>r.c))].sort().forEach(c=>cs.add(new Option(c)));cs.onchange=v2}
+const rs=D.filter(r=>r.c==cs.value);$("ct").textContent=cs.value+", "+rs[0].s;
+mk_("c7",{type:"line",data:{labels:rs.map(r=>DATES[r.d]),datasets:[["Max","mx","hot"],["Average","t","teal"],["Min","mn","cool"]].map(([l,k,c])=>({label:l,data:rs.map(r=>r[k]),borderColor:cv(c),backgroundColor:cv(c),tension:.25}))},options:{plugins:{legend:{position:"bottom"}},scales:{y:{title:{display:true,text:"°C"}}}}});
+$("cn").textContent=rs.some(r=>r.p>0)?"Rain fell on "+rs.filter(r=>r.p>0).length+" of "+rs.length+" days.":"No rain recorded on any of the "+rs.length+" days.";
+$("tb").innerHTML="<tr><th>Day</th><th>Avg °C</th><th>Humidity</th><th>Wind</th><th>Rain mm</th></tr>"+rs.map(r=>`<tr><td>${DATES[r.d]}</td><td>${r.t}</td><td>${r.h}%</td><td>${r.w}</td><td>${r.p}</td></tr>`).join("");}
+function v3(){if(DATES.length<2){$("mt").textContent="Daily change needs at least two dates";$("ms").innerHTML=$("ps").innerHTML="";charts.c8&&charts.c8.destroy();return}const M={t:["Temperature","°C"],p:["Rainfall","mm"],w:["Wind speed","km/h"]};
+mkBtns("ms",Object.entries(M).map(([k,v])=>[k,v[0]]),()=>mk,k=>mk=k);mkBtns("ps",DATES.slice(1).map((l,i)=>[i+1,DATES[i]+" → "+l]),()=>pr,k=>pr=+k);
+const a=Object.fromEntries(D.filter(r=>r.d==pr-1).map(r=>[r.c,r[mk]])),ch=D.filter(r=>r.d==pr&&a[r.c]!==undefined).map(r=>[r.c,+(r[mk]-a[r.c]).toFixed(2)]).sort((x,y)=>y[1]-x[1]);
+const top=ch.length>10?[...ch.slice(0,5),...ch.slice(-5)]:ch;$("mt").textContent=M[mk][0]+" change ("+M[mk][1]+"), "+DATES[pr-1]+" to "+DATES[pr];
+mk_("c8",{type:"bar",data:{labels:top.map(x=>x[0]),datasets:[{data:top.map(x=>x[1]),backgroundColor:top.map(x=>x[1]>=0?cv("hot"):cv("cool")),borderRadius:3}]},options:{indexAxis:"y",plugins:{legend:{display:false}}}});}
+D.forEach(r=>r.k=CATS[r.k]);
+function parse(t){const R=[];let r=[],c="",q=0;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){c+='"';i++}else q=0}else c+=ch}else if(ch=='"')q=1;else if(ch==","){r.push(c);c=""}else if(ch=="\n"||ch=="\r"){if(ch=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";if(r.some(x=>x!==""))R.push(r);r=[]}else c+=ch}r.push(c);if(r.some(x=>x!==""))R.push(r);return R}
+const REQ=["city","date","avg_temperature","min_temperature","max_temperature","avg_humidity","avg_wind_speed","total_precipitation"];
+function load(txt){const R=parse(txt.replace(/^\uFEFF/,"")),h=R[0].map(x=>x.trim().toLowerCase()),miss=REQ.filter(x=>!h.includes(x));
+if(miss.length)throw new Error("Missing columns: "+miss.join(", "));
+const g=(r,k)=>r[h.indexOf(k)],n=(r,k)=>parseFloat(g(r,k));
+const rs=R.slice(1).filter(r=>r.length>=REQ.length).map(r=>({c:g(r,"city").trim(),s:h.includes("state")?g(r,"state").trim():"",dt:g(r,"date").trim().slice(0,10),t:n(r,"avg_temperature"),mn:n(r,"min_temperature"),mx:n(r,"max_temperature"),h:n(r,"avg_humidity"),w:n(r,"avg_wind_speed"),p:n(r,"total_precipitation"),k:h.includes("weather_category")?g(r,"weather_category").trim():""})).filter(r=>r.c&&r.dt&&[r.t,r.mn,r.mx,r.h,r.w,r.p].every(isFinite));
+if(!rs.length)throw new Error("No valid rows found");
+const ds=[...new Set(rs.map(r=>r.dt))].sort();
+rs.forEach(r=>{r.d=ds.indexOf(r.dt);r.k=r.k||(r.p>0?"Rainy":r.t>=28&&r.h<50?"Hot and Dry":"Normal")});
+rs.sort((a,b)=>a.d-b.d);
+D=rs;DATES=ds.map(x=>{const d=new Date(x+"T00:00:00");return isNaN(d)?x:d.toLocaleDateString("en-GB",{day:"numeric",month:"short"})});
+CATS=[...new Set(rs.map(r=>r.k))];day=-1;pr=1}
+// Keep manual CSV upload available as a fallback.
+$("lb").onclick = () => $("lf").click();
+
+$("lf").onchange = e => {
+    const fl = e.target.files[0];
+    e.target.value = "";
+    if (!fl) return;
+
+    fl.text()
+        .then(t => {
+            load(t);
+            $("sub").textContent =
+                new Set(D.map(r => r.c)).size + " cities, " +
+                DATES[0] + " to " + DATES.at(-1) + " (" + fl.name + ")";
+            $("msg").textContent = "Manually loaded " + D.length + " rows.";
+            render();
+        })
+        .catch(x => {
+            $("msg").textContent = "Could not load: " + x.message;
+        });
+};
+
+
+// Automatically load the latest Gold CSV from the project data folder.
+// This relative path assumes index.html is in /dashboard and the CSV is in /data/powerbi.
+async function loadLatestCSV() {
+    try {
+        $("msg").textContent = "Loading the latest pipeline CSV...";
+
+        const response = await fetch(
+            "../data/powerbi/city_weather_insights.csv",
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error("Could not fetch CSV (HTTP " + response.status + ").");
+        }
+
+        const csvText = await response.text();
+        load(csvText);
+
+        const cityCount = new Set(D.map(r => r.c)).size;
+        $("sub").textContent =
+            cityCount + " cities, " + DATES[0] + " to " + DATES.at(-1) +
+            " (latest pipeline data)";
+
+        $("msg").textContent =
+            "Automatically loaded " + D.length +
+            " rows from city_weather_insights.csv.";
+
+        render();
+    } catch (error) {
+        $("msg").textContent =
+            "Automatic loading failed: " + error.message +
+            " Use 'Load your own CSV' to select the file manually.";
+    }
+}
+
+
+// Re-render charts if the browser's colour scheme changes.
+matchMedia("(prefers-color-scheme:dark)").onchange = render;
+
+// Render the built-in sample first, then replace it with the latest CSV.
+render();
+loadLatestCSV();
+</script></body></html>
