@@ -7,7 +7,7 @@ A batch data pipeline that ingests hourly weather data from the Open-Meteo API f
 
 Watch the dashboard demonstration:
 
-[▶ View Environmental Data Intelligence Dashboard Demo](docs/dashboard-demo.mp4)
+[▶ Watch the Environmental Data Intelligence Dashboard Demo](docs/Environmental_Data_Intelligence_Dashboard.mp4)
 
 
 ## Architecture
